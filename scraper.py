@@ -142,9 +142,7 @@ class InfosSpider(scrapy.Spider):
 if __name__ == '__main__' :
     process = CrawlerProcess(
         {
-            'HTTPERROR_ALLOWED_CODES' : [401,429],
-            'HTTPCACHE_IGNORE_HTTP_CODES':[429],
-            'HTTPCACHE_ENABLED' : True,
+            #'HTTPCACHE_ENABLED' : True,
             'USER_AGENT':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36',
             'FEED_URI':'output.csv',
             'FEED_FORMAT':'csv',

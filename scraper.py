@@ -3,7 +3,7 @@ from scrapy.spiders import CrawlSpider
 from scrapy.crawler import CrawlerProcess 
 from itemloaders.processors import TakeFirst
 from scrapy import Request 
-from re import findall 
+from re import findall,sub 
 from scrapy.http.response.html import HtmlResponse
 from typing import List  
 import json 
@@ -37,12 +37,12 @@ class DetailsItem(scrapy.Item):
     virtual_tour_url = scrapy.Field(
         output_processor=TakeFirst()
     )
-    page = scrapy.Field(
-        output_processor=TakeFirst()
-    )
-    city_id = scrapy.Field(
-        output_processor=TakeFirst()
-    )
+    # page = scrapy.Field(
+    #     output_processor=TakeFirst()
+    # )
+    # city_id = scrapy.Field(
+    #     output_processor=TakeFirst()
+    # )
 
 class InfosSpider(scrapy.Spider):
     name = 'extractor'  
@@ -54,10 +54,13 @@ class InfosSpider(scrapy.Spider):
     }
 
     def start_requests(self):
-        for _,city_2_char in self.states.items() :
+        for state,state_2_char in self.states.items() :
             yield Request(
-                self.state_template.format(state='tx'),#city_2_char),
-                callback=self.parse_state_popular_city
+                self.state_template.format(state=state_2_char),
+                callback=self.parse_state_popular_city,
+                meta={
+                    'state':state
+                }
             )
 
     def parse_state_popular_city(self,response):
@@ -69,7 +72,7 @@ class InfosSpider(scrapy.Spider):
                 callback=self.parse_total_pages,
                 meta={
                     'city_id':city_id,
-                    'state':'fl',
+                    'state':response.meta['state'],
                     'city_url':city_url
                 }
             )
@@ -112,7 +115,7 @@ class InfosSpider(scrapy.Spider):
         loader.add_value('listed_by_company',self.get_listed_by_company(response))
         loader.add_value('listed_by_agent_name',self.get_listed_by_agent_name(response))
         loader.add_xpath('virtual_tour_url','//span[contains(text(),"3D Tour") or contains(text(),"Virtual Tour")]/ancestor::a/@href')
-        loader.add_value('city_id',response.meta['city_id'])
+        #loader.add_value('city_id',response.meta['city_id'])
         yield loader.load_item()
 
     def get_total_pages(self,response:HtmlResponse) -> int :
@@ -132,7 +135,7 @@ class InfosSpider(scrapy.Spider):
         return response.xpath('string(//p[contains(text(),"Listed By")])').get().replace('Listed By','').split(',')[0]
     
     def get_listed_by_agent_name(self,response:HtmlResponse) -> str : 
-        return response.xpath('string(//p[contains(text(),"Listed By")])').get().replace('Listed By','').split(',')[-1]
+        return sub('\\d+-\d+-\d+|\(\d+\) \d+-\d+|\s\S+@[\s\S]+\.[\s\S]+','',response.xpath('string(//p[contains(text(),"Listed By")])').get().replace('Listed By','').split(',')[-1])
     
     
 

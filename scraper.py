@@ -12,6 +12,15 @@ from scrapy.shell import inspect_response
 from scrapy.loader import ItemLoader 
 import pickle 
 
+# part related to executable :
+def warn_on_generator_with_return_value_stub(spider, callable):
+    pass
+
+scrapy.utils.misc.warn_on_generator_with_return_value = warn_on_generator_with_return_value_stub
+scrapy.core.scraper.warn_on_generator_with_return_value = warn_on_generator_with_return_value_stub
+#---------------------------------------------------------------------------------------------------#
+
+
 class DetailsItem(scrapy.Item):
     short_address = scrapy.Field(
         output_processor=TakeFirst()
@@ -85,7 +94,10 @@ class InfosSpider(scrapy.Spider):
                 callback=self.parse_property,
                 meta=response.meta
             )
-        total_pages = self.get_total_pages(response)
+        try : 
+            total_pages = self.get_total_pages(response)
+        except ValueError : 
+            pass 
         for page in range(2,total_pages+1):
             response.meta['page'] = page 
             yield Request(
@@ -146,6 +158,7 @@ if __name__ == '__main__' :
             'USER_AGENT':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36',
             'FEED_URI':'output.csv',
             'FEED_FORMAT':'csv',
+            'LOG_LEVEL':'ERROR'
         }
     )
     process.crawl(InfosSpider)

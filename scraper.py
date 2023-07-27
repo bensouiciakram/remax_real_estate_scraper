@@ -8,7 +8,6 @@ from scrapy.http.response.html import HtmlResponse
 from typing import List  
 import json 
 from scrapy.http.response.text import TextResponse
-import requests
 from scrapy.shell import inspect_response
 from scrapy.loader import ItemLoader 
 import pickle 
@@ -55,7 +54,7 @@ class InfosSpider(scrapy.Spider):
     }
 
     def start_requests(self):
-        for _,city_2_char in self.states :
+        for _,city_2_char in self.states.items() :
             yield Request(
                 self.state_template.format(state='tx'),#city_2_char),
                 callback=self.parse_state_popular_city
@@ -112,7 +111,7 @@ class InfosSpider(scrapy.Spider):
         loader.add_value('zip',self.get_zip(response))
         loader.add_value('listed_by_company',self.get_listed_by_company(response))
         loader.add_value('listed_by_agent_name',self.get_listed_by_agent_name(response))
-        loader.add_xpath('virtual_tour_url','//span[contains(text(),"Virtual Tour")]/ancestor::a/@href')
+        loader.add_xpath('virtual_tour_url','//span[contains(text(),"3D Tour") or contains(text(),"Virtual Tour")]/ancestor::a/@href')
         loader.add_value('city_id',response.meta['city_id'])
         yield loader.load_item()
 
@@ -133,11 +132,9 @@ class InfosSpider(scrapy.Spider):
         return response.xpath('string(//p[contains(text(),"Listed By")])').get().replace('Listed By','').split(',')[0]
     
     def get_listed_by_agent_name(self,response:HtmlResponse) -> str : 
-        return response.xpath('string(//p[contains(text(),"Listed By")])').get().replace('Listed By','').split(',')[1]
+        return response.xpath('string(//p[contains(text(),"Listed By")])').get().replace('Listed By','').split(',')[-1]
     
     
-
-
 
 if __name__ == '__main__' :
     process = CrawlerProcess(

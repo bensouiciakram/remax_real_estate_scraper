@@ -37,7 +37,7 @@ Once you have installed the necessary dependencies, you can start scraping real 
 1. Navigate to the project's root directory using the terminal or command prompt.
 2. Execute the Scrapy spider by running the following command:
 ```bash
-pip install scrapy
+python scraper.py
 ```
 ## Contributing
 Contributions to this project are highly appreciated. If you discover any bugs, have suggestions for improvements, or want to add new features, please feel free to open an issue or submit a pull request.

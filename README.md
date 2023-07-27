@@ -24,12 +24,12 @@ Web scraping is a powerful technique for gathering data from websites, and in th
 ## Installation : 
 To run this project locally, follow these steps:
 
-1. Ensure you have Python (version X.X.X) installed on your system.
+1. Ensure you have Python (version 3) installed on your system.
 2. Clone this repository to your local machine or download the ZIP archive.
 3. Open a terminal or command prompt and navigate to the project's root directory.
 4. Install the required dependencies using the following command:
 ```bash
-pip install scrapy
+pip install -r requirements.txt
 ```
 ## Usage : 
 Once you have installed the necessary dependencies, you can start scraping real estate information from remax.com. Follow these steps:

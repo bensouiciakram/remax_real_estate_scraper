@@ -20,9 +20,10 @@ This project is a web scraping tool built using Python and the Scrapy framework 
 
 ### Installation
 
-1. Clone the repository: `git clone https://github.com/your-username/project-name.git`
-2. Navigate to the project folder: `cd project-name`
-3. Install dependencies: `pip install -r requirements.txt`
+1. Clone the repository: ```bash
+   git clone https://github.com/your-username/project-name.git```
+3. Navigate to the project folder: `cd project-name`
+4. Install dependencies: `pip install -r requirements.txt`
 
 ### Output
 

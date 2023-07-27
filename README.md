@@ -29,7 +29,7 @@ To run this project locally, follow these steps:
 3. Open a terminal or command prompt and navigate to the project's root directory.
 4. Install the required dependencies using the following command:
 ```bash
-pip install -r requirements.txt
+pip install -r requirements.txt 
 ```
 ## Usage : 
 Once you have installed the necessary dependencies, you can start scraping real estate information from remax.com. Follow these steps:

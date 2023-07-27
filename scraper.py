@@ -97,7 +97,7 @@ class InfosSpider(scrapy.Spider):
         try : 
             total_pages = self.get_total_pages(response)
         except ValueError : 
-            pass 
+            return 
         for page in range(2,total_pages+1):
             response.meta['page'] = page 
             yield Request(

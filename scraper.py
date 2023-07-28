@@ -180,7 +180,7 @@ class InfosSpider(scrapy.Spider):
     def parse_property(self,response):
         loader = ItemLoader(DetailsItem(),response)
         loader.add_value('property_url',response.url)
-        loader.add_xpath('short_address','string(//span[@class="listing-card-location"])')
+        loader.add_xpath('short_address','string(//span[@class="listing-card-location"])',lambda x:[string.strip() for string in x])
         loader.add_value('city',self.get_city(response))
         loader.add_value('state',self.get_state(response))
         loader.add_value('zip',self.get_zip(response))
@@ -201,7 +201,7 @@ class InfosSpider(scrapy.Spider):
         return response.xpath('string(//span[@class="listing-card-location"])').get().strip().split(',')[0]
     
     def get_zip(self,response:HtmlResponse) -> str : 
-        return response.xpath('string(//span[@class="listing-card-location"])').re('\d+')[0]
+        return response.xpath('string(//span[@class="listing-card-location"])').re('\d+')[0].strip()
     
     def get_listed_by_company(self,response:HtmlResponse) -> str :
         return response.xpath('string(//p[contains(text(),"Listed By")])').get().replace('Listed By','').split(',')[0].strip()

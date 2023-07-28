@@ -58,33 +58,93 @@ class InfosSpider(scrapy.Spider):
     state_template = 'https://www.remax.com/homes-for-sale/{state}'
     popular_city_filters = '?filters={%22bPropertyType%22:[%22Single%20Family%22,%22Condo%22,%22Townhome%22],%22State%22:[%22FL%22],%22bStatus%22:[%22For%20Sale%22],%22hasVirtualTour%22:1}'
     states = {
-        'florida':'fl',
-        'texas':'tx'
+        'AL': 'Alabama',
+        'AK': 'Alaska',
+        'AZ': 'Arizona',
+        'AR': 'Arkansas',
+        'CA': 'California',
+        'CO': 'Colorado',
+        'CT': 'Connecticut',
+        'DE': 'Delaware',
+        'FL': 'Florida',
+        'GA': 'Georgia',
+        'HI': 'Hawaii',
+        'ID': 'Idaho',
+        'IL': 'Illinois',
+        'IN': 'Indiana',
+        'IA': 'Iowa',
+        'KS': 'Kansas',
+        'KY': 'Kentucky',
+        'LA': 'Louisiana',
+        'ME': 'Maine',
+        'MD': 'Maryland',
+        'MA': 'Massachusetts',
+        'MI': 'Michigan',
+        'MN': 'Minnesota',
+        'MS': 'Mississippi',
+        'MO': 'Missouri',
+        'MT': 'Montana',
+        'NE': 'Nebraska',
+        'NV': 'Nevada',
+        'NH': 'New Hampshire',
+        'NJ': 'New Jersey',
+        'NM': 'New Mexico',
+        'NY': 'New York',
+        'NC': 'North Carolina',
+        'ND': 'North Dakota',
+        'OH': 'Ohio',
+        'OK': 'Oklahoma',
+        'OR': 'Oregon',
+        'PA': 'Pennsylvania',
+        'RI': 'Rhode Island',
+        'SC': 'South Carolina',
+        'SD': 'South Dakota',
+        'TN': 'Tennessee',
+        'TX': 'Texas',
+        'UT': 'Utah',
+        'VT': 'Vermont',
+        'VA': 'Virginia',
+        'WA': 'Washington',
+        'WV': 'West Virginia',
+        'WI': 'Wisconsin',
+        'WY': 'Wyoming',
     }
 
-    def start_requests(self):
-        for state,state_2_char in self.states.items() :
-            yield Request(
-                self.state_template.format(state=state_2_char),
-                callback=self.parse_state_popular_city,
-                meta={
-                    'state':state
-                }
-            )
+    def __init__(self,listing_url):
+        self.listing_url = listing_url 
 
-    def parse_state_popular_city(self,response):
-        cities_ids = response.xpath('//div[@class="cat-table-row"]//a/@href').re('\d+$')
-        cities_urls = [response.urljoin(url) for url in response.xpath('//div[@class="cat-table-row"]//a/@href').getall()]
-        for city_id,city_url in zip(cities_ids,cities_urls) :
-            yield Request(
-                city_url + self.popular_city_filters,
-                callback=self.parse_total_pages,
-                meta={
-                    'city_id':city_id,
-                    'state':response.meta['state'],
-                    'city_url':city_url
-                }
-            )
+    # def start_requests(self):
+    #     for state,state_2_char in self.states.items() :
+    #         yield Request(
+    #             self.state_template.format(state=state_2_char),
+    #             callback=self.parse_state_popular_city,
+    #             meta={
+    #                 'state':state
+    #             }
+    #         )
+
+    def start_requests(self):
+        yield Request(
+            self.listing_url + self.popular_city_filters,
+            callback=self.parse_total_pages,
+            meta={
+                'city_url':self.listing_url
+            }
+        )
+
+    # def parse_state_popular_city(self,response):
+    #     cities_ids = response.xpath('//div[@class="cat-table-row"]//a/@href').re('\d+$')
+    #     cities_urls = [response.urljoin(url) for url in response.xpath('//div[@class="cat-table-row"]//a/@href').getall()]
+    #     for city_id,city_url in zip(cities_ids,cities_urls) :
+    #         yield Request(
+    #             city_url + self.popular_city_filters,
+    #             callback=self.parse_total_pages,
+    #             meta={
+    #                 'city_id':city_id,
+    #                 #'state':response.meta['state'],
+    #                 'city_url':city_url
+    #             }
+    #         )
 
     def parse_total_pages(self,response):
         properties_urls = [response.urljoin(url) for url in response.xpath('//div[@class="card-full-address cursor-pointer"]/a/@href').getall()]
@@ -122,7 +182,7 @@ class InfosSpider(scrapy.Spider):
         loader.add_value('property_url',response.url)
         loader.add_xpath('short_address','string(//span[@class="listing-card-location"])')
         loader.add_value('city',self.get_city(response))
-        loader.add_value('state',response.meta['state'])
+        loader.add_value('state',self.get_state(response))
         loader.add_value('zip',self.get_zip(response))
         loader.add_value('listed_by_company',self.get_listed_by_company(response))
         loader.add_value('listed_by_agent_name',self.get_listed_by_agent_name(response))
@@ -144,14 +204,18 @@ class InfosSpider(scrapy.Spider):
         return response.xpath('string(//span[@class="listing-card-location"])').re('\d+')[0]
     
     def get_listed_by_company(self,response:HtmlResponse) -> str :
-        return response.xpath('string(//p[contains(text(),"Listed By")])').get().replace('Listed By','').split(',')[0]
+        return response.xpath('string(//p[contains(text(),"Listed By")])').get().replace('Listed By','').split(',')[0].strip()
     
     def get_listed_by_agent_name(self,response:HtmlResponse) -> str : 
-        return sub('\\d+-\d+-\d+|\(\d+\) \d+-\d+|\s\S+@[\s\S]+\.[\s\S]+','',response.xpath('string(//p[contains(text(),"Listed By")])').get().replace('Listed By','').split(',')[-1])
+        return sub('\\d+-\d+-\d+|\(\d+\) \d+-\d+|\s\S+@[\s\S]+\.[\s\S]+','',response.xpath('string(//p[contains(text(),"Listed By")])').get().replace('Listed By','').split(',')[-1]).strip()
     
-    
+    def get_state(self,response:HtmlResponse) -> str :
+        return self.states[
+            response.url.split('/')[3].upper()
+        ]
 
 if __name__ == '__main__' :
+    listing_url = input('enter the listing url : ')
     process = CrawlerProcess(
         {
             #'HTTPCACHE_ENABLED' : True,
@@ -160,7 +224,7 @@ if __name__ == '__main__' :
             'FEED_FORMAT':'csv',
         }
     )
-    process.crawl(InfosSpider)
+    process.crawl(InfosSpider,listing_url)
     process.start()
 
 

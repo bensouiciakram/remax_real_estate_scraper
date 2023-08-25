@@ -56,7 +56,9 @@ class DetailsItem(scrapy.Item):
 class InfosSpider(scrapy.Spider):
     name = 'extractor'  
     state_template = 'https://www.remax.com/homes-for-sale/{state}'
-    popular_city_filters = '?filters={%22bPropertyType%22:[%22Single%20Family%22,%22Condo%22,%22Townhome%22],%22State%22:[%22FL%22],%22bStatus%22:[%22For%20Sale%22],%22hasVirtualTour%22:1}'
+    #popular_city_filters = '?filters={%22bPropertyType%22:[%22Single%20Family%22,%22Condo%22,%22Townhome%22],%22State%22:[%22FL%22],%22bStatus%22:[%22For%20Sale%22],%22hasVirtualTour%22:1}'
+    #popular_city_filters = '?filters={%22bPropertyType%22:[%22Single%20Family%22,%22Condo%22,%22Townhome%22],%22State%22:[%22FL%22],%22bStatus%22:[%22For%20Sale%22],"openHouseOffset":"0",%22hasVirtualTour%22:1}'
+    popular_city_filters = '?filters={{"bPropertyType":["Single%20Family","Condo","Townhome"],"bStatus":["For%20Sale"],"city":["{city}"],"openHouseOffset":"0","hasVirtualTour":1}}'
     states = {
         'AL': 'Alabama',
         'AK': 'Alaska',
@@ -125,7 +127,9 @@ class InfosSpider(scrapy.Spider):
 
     def start_requests(self):
         yield Request(
-            self.listing_url + self.popular_city_filters,
+            self.listing_url + self.popular_city_filters.format(
+                city=self.get_city_filter_name()
+            ),
             callback=self.parse_total_pages,
             meta={
                 'city_url':self.listing_url
@@ -161,7 +165,9 @@ class InfosSpider(scrapy.Spider):
         for page in range(2,total_pages+1):
             response.meta['page'] = page 
             yield Request(
-                response.meta['city_url'] + f'/page-{page}' + self.popular_city_filters,
+                response.meta['city_url'] + f'/page-{page}' + self.popular_city_filters.format(
+                city=self.get_city_filter_name()
+            ),
                 callback=self.parse_listing,
                 dont_filter=True,
                 meta=response.meta
@@ -213,6 +219,9 @@ class InfosSpider(scrapy.Spider):
         return self.states[
             response.url.split('/')[3].upper()
         ]
+    
+    def get_city_filter_name(self) -> str :
+        return findall('/[a-z]{2}/([\s\S]+?)/',self.listing_url)[0].title()
 
 if __name__ == '__main__' :
     listing_url = input('enter the listing url : ')

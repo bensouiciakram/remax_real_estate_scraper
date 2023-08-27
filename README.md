@@ -2,6 +2,12 @@
 
 This project is a web scraping tool built using Python and the Scrapy framework to extract real estate information from remax.com. It aims to collect property listings, including property details, prices, and other relevant data, for further analysis or data processing.
 
+### type 
+freelancing project 
+
+### client : 
+
+
 ## Table of Contents
 
 - [Introduction](#introduction)
